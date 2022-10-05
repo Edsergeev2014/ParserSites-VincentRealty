@@ -60,6 +60,37 @@ class Visitor:
                 self.driver_set.close()
         return
 
+    def amulation_moving(self):
+        # Переход на рекламный сайт и эмуляция движения в нем:
+        print('Url рекламного сайта: ', self.driver_set.current_url)
+        tags = ['footer', 'h1', 'h2', 'body', 'title', 'form', 'head', 'button', 'a']
+        for tag in tags:
+            print(f'Поиск "{tag}" на странице рекламного сайта - ', end='')
+            try:
+                scroll_target = self.driver_set.find_element(By.TAG_NAME, tag)
+                print('найден на странице. ')
+                print('Скролинг страницы...', end='')
+                let_me_visit.scroll(scroll_target)
+                print('  ...пауза.')
+                let_me_visit.pause(3)  # Pause 2 seconds
+                print('... пауза завершена.')
+                if tag == (tags[-1] or tags[-2]):     # 'button', 'a'
+                    print(f'Переход по ссылке {tag} с рекламного сайта...', end='')
+                    try:
+                        scroll_target.click()
+                        print('  ...пауза.')
+                        self.pause()
+                        print(f'Возвращаемся к рекламному сайту.')
+                        self.driver_set.back()
+                    except:
+                        print('Выполнение прервано.')
+                        self.driver_set.switch_to.window(let_me_visit.driver_set.window_handles[-1])
+                else:
+                    pass
+            except Exception:
+                print(f'... выполнение прервано: таг "{tag}" не найден на рекламном сайте.')
+        return
+
     def open_new_window(self):
         self.driver_set.execute_script("window.open('');")
         self.driver_set.switch_to.window(self.driver_set.window_handles[1]) #  есть только 1 открытая вкладка:
@@ -111,6 +142,9 @@ for page in let_me_visit.site_object_pages[0:]:
     let_me_visit.scroll(scroll_target)
     let_me_visit.pause()
 
+    # Проверяем количество открытых окон в браузере:
+    print(f'Кол-во открытых окон в браузере: {len(let_me_visit.driver_set.window_handles)}')
+
     try:        # Если рекламный блок найден
         print('Находим на странице рекламу...', end='')
         block_advert = let_me_visit.driver_set.find_element(By.XPATH, "//div[@id='yandex_rtb_R-A-1786435-3']")
@@ -133,44 +167,8 @@ for page in let_me_visit.site_object_pages[0:]:
         # print(f'Список открытых окон в браузере: {len(let_me_visit.driver_set.window_handles)}')
         # [print(let_me_visit.driver_set.window_handles[www]) for www in len(let_me_visit.driver_set.window_handles)]
 
-        print('Url рекламного сайта: ', let_me_visit.driver_set.current_url)
-        tags = ['footer', 'h1', 'h2', 'body', 'title', 'form', 'head', 'button', 'a']
-        for tag in tags:
-            print(f'Поиск "{tag}" на странице рекламного сайта - ', end='')
-            try:
-                scroll_target = let_me_visit.driver_set.find_element(By.TAG_NAME, tag)
-                print('найден на странице. ')
-                print('Скролинг страницы...', end='')
-                let_me_visit.scroll(scroll_target)
-                print('  ...пауза.')
-                let_me_visit.pause(3)  # Pause 2 seconds
-                print('... пауза завершена.')
-                if tag == (tags[-1] or tags[-2]):     # 'button', 'a'
-                    print(f'Переход по ссылке {tag} с рекламного сайта...', end='')
-                    try:
-                        scroll_target.click()
-                        print('  ...пауза.')
-                        let_me_visit.pause()
-                        print(f'Возвращаемся к рекламному сайту.')
-                        let_me_visit.driver_set.back()
-                    except:
-                        print('Выполнение прервано.')
-                        let_me_visit.driver_set.switch_to.window(let_me_visit.driver_set.window_handles[-1])
-                    # Пауза:
-                    # let_me_visit.pause(2)  # Pause 2 seconds
-                    # print('... пауза завершена.')
-                    # for i in 100000000:
-                    #     ii =+ 1
-                else:
-                    pass
-            except Exception:
-                print(f'... выполнение прервано: таг "{tag}" не найден на рекламном сайте.')
-
-        # let_me_visit.driver_set.back()
-        # print(let_me_visit.driver_set.window_handles)
-        # print('Текущий url: ', let_me_visit.driver_set.current_url)
-        # Close the tab or window
-        # let_me_visit.driver_set.close()
+        # Переход на рекламный сайт и эмуляция движения пользователя на нём:
+        let_me_visit.amulation_moving()
 
         # Возвращаемся на исходную страницу браузера:
         # let_me_visit.driver_set.switch_to.window(let_me_visit.driver_set.window_handles[0])
@@ -184,6 +182,9 @@ for page in let_me_visit.site_object_pages[0:]:
         else:
             # Возвращаемся на исходную страницу сайта:
             let_me_visit.driver_set.back()
+
+        # Проверяем количество открытых окон в браузере:
+        print(f'Кол-во открытых окон в браузере: {len(let_me_visit.driver_set.window_handles)}')
 
         # print('a_rel: ', type(a_rel), a_rel.get_attribute("href"))
 
