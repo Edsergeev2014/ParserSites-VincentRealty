@@ -28,6 +28,7 @@ class Visitor:
             # 'http://nemykin-art.ru/index.html'
         ]
         self.driver_set = None  # Запись драйвера в переменную класса после первого открытия браузера
+        self.time_set_recorded = None
 
     def open_first_page_for_parsing(self, site_page: str = None):
         service_obj = Service("venv\Lib\Chrome\chromedriver.exe")
@@ -53,6 +54,15 @@ class Visitor:
         except:
             return False
 
+    def scroll_page(self, y_size: int = 1920):
+        try:
+            # print('Скролинг страницы.')
+            self.driver_set.execute_script(f"window.scrollTo(0, {y_size})")
+        except:
+            # print('Скролинг страницы не удался.')
+            pass
+        return
+
     def close_non_original_windows(self, original_window):
         for handle in self.driver_set.window_handles:
             self.driver_set.switch_to.window(handle)
@@ -61,7 +71,8 @@ class Visitor:
         return
 
     def amulation_moving(self):
-        # Переход на рекламный сайт и эмуляция движения в нем:
+        # Переход на рекламный сайт и эмуляция движения в нём
+        # скролингом и паузами:
         print(f'{bcolors.BOLD}Url рекламного сайта: {bcolors.ENDC}', self.driver_set.current_url)
         tags = ['h1', 'h2', 'footer', 'title', 'form', 'head', 'button', 'nav', 'a']
         count = 0
@@ -76,7 +87,7 @@ class Visitor:
                 let_me_visit.pause(3)  # Pause 2 seconds
                 print(' -> пауза завершена.')
                 if tag == (tags[-1] or tags[-2]):     # 'button', 'a'
-                    print(f'Переход по ссылке {tag} с рекламного сайта...', end='')
+                    print(f'Переход по ссылке "{bcolors.HEADER}{tag}{bcolors.ENDC}" с рекламного сайта...', end='')
                     try:
                         scroll_target.click()
                         print('  ...пауза.')
@@ -90,6 +101,7 @@ class Visitor:
                     continue
             except Exception:
                 print(f'{bcolors.WARNING}не найден на странице.{bcolors.ENDC}')
+
         return
 
     def open_new_window(self):
@@ -102,6 +114,20 @@ class Visitor:
         site_page = ''.join([page, router, str(score)])
         print('site_page: ', site_page)
         return site_page
+
+    def check_time_for_adv_site(self, wish_time_period: float = 16.1):
+        print(f'Проведенное время на рекламном сайте: {int(self.get_current_time()-self.get_time())} сек. из {wish_time_period}')
+        return True if wish_time_period < (self.get_current_time()-self.get_time()) else False
+
+    def get_current_time(self):
+        return time.time()
+
+    def set_time(self):
+        self.time_set_recorded = self.get_current_time()
+        return
+
+    def get_time(self):
+        return self.time_set_recorded
 
     # Проверка на несуществующую страницу:
     def check_404_page(self, driver):
@@ -143,6 +169,7 @@ for page in let_me_visit.site_object_pages[0:]:
     # Скролинг вниз страницы
     scroll_target = let_me_visit.driver_set.find_element(By.CLASS_NAME, 'footer')
     let_me_visit.scroll(scroll_target)
+    let_me_visit.scroll_page(500)  # Скролинг вниз на 500 пикселей
     let_me_visit.pause()
 
     # Проверяем количество открытых окон в браузере:
@@ -172,8 +199,20 @@ for page in let_me_visit.site_object_pages[0:]:
             print(f'{bcolors.FAIL}Рекламный сайт не открылся.{bcolors.ENDC} Переходим на просмотр следующей страницы исходного сайта.')
             continue
 
+        # Фиксируем время захода на рекламный сайт:
+        let_me_visit.set_time()
+
         # Переход на рекламный сайт и эмуляция движения пользователя на нём:
         let_me_visit.amulation_moving()
+
+        # Проверка времени, проведенного на рекамном сайте:
+        # Время, отведенное для пребывания на рекламном сайте
+        # составляет 16 сек.:
+        while not let_me_visit.check_time_for_adv_site(30):
+            let_me_visit.scroll_page(905) # Скролинг вниз на (...) пикселей
+            let_me_visit.pause(5)
+            let_me_visit.scroll_page(-750)
+        # print(f'Проведенное время на рекл.сайте: {let_me_visit.get_time() - let_me_visit.time_set_recorded}')
 
         # Возвращаемся на исходную страницу браузера:
         # let_me_visit.driver_set.switch_to.window(let_me_visit.driver_set.window_handles[0])
