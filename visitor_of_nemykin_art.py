@@ -62,18 +62,19 @@ class Visitor:
 
     def amulation_moving(self):
         # Переход на рекламный сайт и эмуляция движения в нем:
-        print('Url рекламного сайта: ', self.driver_set.current_url)
-        tags = ['footer', 'h1', 'h2', 'body', 'title', 'form', 'head', 'button', 'a']
+        print(f'{bcolors.BOLD}Url рекламного сайта: {bcolors.ENDC}', self.driver_set.current_url)
+        tags = ['h1', 'h2', 'footer', 'title', 'form', 'head', 'button', 'nav', 'a']
+        count = 0
         for tag in tags:
-            print(f'Поиск "{tag}" на странице рекламного сайта - ', end='')
+            print(f'Поиск тега "{bcolors.HEADER}{tag}{bcolors.ENDC}" - ', end='')
             try:
                 scroll_target = self.driver_set.find_element(By.TAG_NAME, tag)
-                print('найден на странице. ')
-                print('Скролинг страницы...', end='')
+                print(f'{bcolors.OKGREEN} найден на странице.{bcolors.ENDC}')
+                print(f'{bcolors.OKCYAN} -> cкролинг страницы{bcolors.ENDC}', end='')
                 let_me_visit.scroll(scroll_target)
-                print('  ...пауза.')
+                print(' -> пауза', end='')
                 let_me_visit.pause(3)  # Pause 2 seconds
-                print('... пауза завершена.')
+                print(' -> пауза завершена.')
                 if tag == (tags[-1] or tags[-2]):     # 'button', 'a'
                     print(f'Переход по ссылке {tag} с рекламного сайта...', end='')
                     try:
@@ -83,12 +84,12 @@ class Visitor:
                         print(f'Возвращаемся к рекламному сайту.')
                         self.driver_set.back()
                     except:
-                        print('Выполнение прервано.')
+                        print(f'{bcolors.WARNING} Выполнение прервано.{bcolors.ENDC}')
                         self.driver_set.switch_to.window(let_me_visit.driver_set.window_handles[-1])
                 else:
-                    pass
+                    continue
             except Exception:
-                print(f'... выполнение прервано: таг "{tag}" не найден на рекламном сайте.')
+                print(f'{bcolors.WARNING}не найден на странице.{bcolors.ENDC}')
         return
 
     def open_new_window(self):
@@ -110,18 +111,20 @@ class Visitor:
             return True
         return False
 
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
 def prepare_DF():
     return # pd.DataFrame({'Жилищный комплекс': [], 'Район города': [], 'Адрес:': [], 'Этажность': [], 'Цена за кв.м.': [], 'Расстояние до моря': [], 'Актуальность на дату:': []})
 
-# Страница для обработки:
-# site_page = "https://www.vincent-realty.ru/offers/novostroyki-v-sochi/"
-# 'https://www.vincent-realty.ru/offers/novostroyki-v-sochi/?PAGEN_1=1'
-# router = '?PAGEN_1='
-# С какой страницы начинать парсинг сайта:
-# score = 1
-# Карточка:
-# cards = list()
-# num_of_cards_on_page = int()
 
 let_me_visit = Visitor()
 # site_page = let_me_visit.site_object_pages[0]
@@ -143,29 +146,31 @@ for page in let_me_visit.site_object_pages[0:]:
     let_me_visit.pause()
 
     # Проверяем количество открытых окон в браузере:
-    print(f'Кол-во открытых окон в браузере: {len(let_me_visit.driver_set.window_handles)}')
+    print(f'{bcolors.OKBLUE}Кол-во открытых окон в браузере (1о): {len(let_me_visit.driver_set.window_handles)}{bcolors.ENDC}')
 
     try:        # Если рекламный блок найден
-        print('Находим на странице рекламу...', end='')
+        print('Находим рекламу на странице сайта ->', end='')
         block_advert = let_me_visit.driver_set.find_element(By.XPATH, "//div[@id='yandex_rtb_R-A-1786435-3']")
         # print('block_advert: ', type(block_advert), block_advert)
-        print('переходим на неё:')
+        print(f'{bcolors.OKGREEN}{bcolors.BOLD} переходим на рекламу. {bcolors.ENDC}')
         try:
             block_advert.click()
         except:
-            print('Click на рекламу не сработал.')
+            print(f'{bcolors.FAIL} Click на рекламу не сработал.{bcolors.ENDC}')
             continue
 
         # Проверяем, открылось ли новое окно:
         count_open_windows = len(let_me_visit.driver_set.window_handles)
-        print(f'Кол-во открытых окон в браузере: {count_open_windows}')
+        print(f'{bcolors.OKBLUE}Кол-во открытых окон в браузере (1о+1р): {count_open_windows}{bcolors.ENDC}')
         if count_open_windows > 1:
             # Последнее открытое окно в списке браузера: window_handles[-1]
             # Переходим в новое окно:
             let_me_visit.driver_set.switch_to.window(let_me_visit.driver_set.window_handles[-1])
-
-        # print(f'Список открытых окон в браузере: {len(let_me_visit.driver_set.window_handles)}')
-        # [print(let_me_visit.driver_set.window_handles[www]) for www in len(let_me_visit.driver_set.window_handles)]
+            # print(f'Список открытых окон в браузере: {len(let_me_visit.driver_set.window_handles)}')
+            # [print(let_me_visit.driver_set.window_handles[www]) for www in len(let_me_visit.driver_set.window_handles)]
+        elif let_me_visit.driver_set.current_url == page:
+            print(f'{bcolors.FAIL}Рекламный сайт не открылся.{bcolors.ENDC} Переходим на просмотр следующей страницы исходного сайта.')
+            continue
 
         # Переход на рекламный сайт и эмуляция движения пользователя на нём:
         let_me_visit.amulation_moving()
@@ -180,16 +185,20 @@ for page in let_me_visit.site_object_pages[0:]:
             # # Переходим на исходную страницу:
             let_me_visit.driver_set.switch_to.window(original_window)
         else:
-            # Возвращаемся на исходную страницу сайта:
+            # Возвращаемся на исходную страницу сайта,
+            # если рекламный сайт открыт в исходном окне:
             let_me_visit.driver_set.back()
 
         # Проверяем количество открытых окон в браузере:
-        print(f'Кол-во открытых окон в браузере: {len(let_me_visit.driver_set.window_handles)}')
+        print(f'{bcolors.OKBLUE}Кол-во открытых окон в браузере (после очистки рекламного сайта): {len(let_me_visit.driver_set.window_handles)}{bcolors.ENDC}')
 
         # print('a_rel: ', type(a_rel), a_rel.get_attribute("href"))
 
     except:
-        print('Рекламного блока на этой странице сайта не найдено.')
+        print(f'{bcolors.FAIL} Рекламного блока на этой странице сайта не найдено.{bcolors.ENDC}')
+
+# Завершаем процесс
+print('Процесс завершен.')
 
 # Закрываем браузер:
 let_me_visit.driver_set.quit()
