@@ -11,6 +11,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 
 import pandas as pd
 import time
@@ -74,7 +75,7 @@ class Visitor:
         # Переход на рекламный сайт и эмуляция движения в нём
         # скролингом и паузами:
         print(f'{bcolors.BOLD}Url рекламного сайта: {bcolors.ENDC}', self.driver_set.current_url)
-        tags = ['h1', 'h2', 'footer', 'title', 'form', 'head', 'button', 'nav', 'a']
+        tags = ['h1', 'h2', 'footer', 'title', 'form', 'head', 'nav', 'button', 'a']
         count = 0
         for tag in tags:
             print(f'Поиск тега "{bcolors.HEADER}{tag}{bcolors.ENDC}" - ', end='')
@@ -87,9 +88,11 @@ class Visitor:
                 let_me_visit.pause(3)  # Pause 2 seconds
                 print(' -> пауза завершена.')
                 if tag == (tags[-1] or tags[-2]):     # 'button', 'a'
-                    print(f'Переход по ссылке "{bcolors.HEADER}{tag}{bcolors.ENDC}" с рекламного сайта...', end='')
+                    print(f'Переход по ссылке "{bcolors.HEADER}{tag}{bcolors.ENDC}" на рекламном сайте...', end='')
                     try:
-                        scroll_target.click()
+                        print('Текст ссылки: ', scroll_target.get_attribute('href'))
+                        # scroll_target.click()
+                        scroll_target.send_keys(Keys.RETURN)
                         print('  ...пауза.')
                         self.pause()
                         print(f'Возвращаемся к рекламному сайту.')
@@ -116,7 +119,7 @@ class Visitor:
         return site_page
 
     def check_time_for_adv_site(self, wish_time_period: float = 16.1):
-        print(f'Проведенное время на рекламном сайте: {int(self.get_current_time()-self.get_time())} сек. из {wish_time_period}')
+        print(f'Время на рекламном сайте: {int(self.get_current_time()-self.get_time())} из {wish_time_period} сек.')
         return True if wish_time_period < (self.get_current_time()-self.get_time()) else False
 
     def get_current_time(self):
@@ -216,7 +219,7 @@ for page in let_me_visit.site_object_pages[0:]:
 
         # Возвращаемся на исходную страницу браузера:
         # let_me_visit.driver_set.switch_to.window(let_me_visit.driver_set.window_handles[0])
-        print('Возвращаемся на исходную страницу.')
+        print('Закрываем рекламу и возвращаемся на исходную страницу сайта.')
         print('')
         if count_open_windows > 1:
             # Закрываем лишние окна, оставляем - одно.
