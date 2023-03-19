@@ -1,7 +1,6 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# Перед запуском проверить, установлен ли браузер Chrome на этом компьютере: https://www.google.com/intl/ru/chrome/
+# Chromedriver скачать в соответствии с версией Chrome: https://chromedriver.chromium.org/downloads
+# Продублировать его в venv проекта по пути: "venv\Lib\Chrome\chromedriver.exe"
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service

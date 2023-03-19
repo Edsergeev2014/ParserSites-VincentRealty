@@ -89,7 +89,7 @@ for page in let_me_visit.site_object_pages[0:]:
         # print(f'Проведенное время на рекл.сайте: {let_me_visit.get_time() - let_me_visit.time_set_recorded}')
 
         # Записываем в log-файл о посещении рекламного сайта
-        # logging.debug('Hi')
+        # oggining.debug('Hi')
         logging.info(f'{let_me_visit.driver_set.current_url}')
         # logging.warning('exit')
 

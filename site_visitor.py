@@ -93,9 +93,9 @@ class Visitor:
                 scroll_target = self.driver_set.find_element(By.TAG_NAME, tag)
                 print(f'{bcolors.OKGREEN} найден на странице.{bcolors.ENDC}')
                 print(f'{bcolors.OKCYAN} -> cкролинг страницы{bcolors.ENDC}', end='')
-                let_me_visit.scroll(scroll_target)
+                self.scroll(scroll_target)
                 print(' -> пауза', end='')
-                let_me_visit.pause(3)  # Pause 2 seconds
+                self.pause(3)  # Pause 2 seconds
                 print(' -> пауза завершена.')
                 if tag == (tags[-1] or tags[-2]):     # 'button', 'a'
                     print(f'Переход по ссылке "{bcolors.HEADER}{tag}{bcolors.ENDC}" на рекламном сайте... ')
@@ -129,10 +129,23 @@ class Visitor:
                                     print("Click!", end='')
                                 # set_of_links[0].click()
                                 # scroll_target.click()
-                                print(bcolors.OKGREEN + ' -> переход состоялся.', end='')
-                                logging.info(f'{let_me_visit.driver_set.set_of_links[0]}')
+                                print(bcolors.OKGREEN + ' -> переход состоялся.', bcolors.ENDC)
+                                try:
+                                    # Записываем в лог посещение рекламы
+                                    # если это другой рекламный сайт:
+                                    if len(set_of_links) > 1:
+                                        clear_current_url = re.search('https?://([A-Za-z_0-9.-]+).*',
+                                                                      self.driver_set.current_url)
+                                        if clear_current_url:
+                                            # Записываем, если найдена новая уникальная ссылка на другой сайт:
+                                            clear_current_url = clear_current_url.group(1)
 
-
+                                            for link in set_of_links:
+                                                if clear_current_url not in link:
+                                                    logging.info(f'{link}')
+                                                    # logging.info(f'{set_of_links[0]}')
+                                except:
+                                    print(f'Запись в лог "{set_of_links[0]}" не удалась')
                             except:
                                 print('\n' + bcolors.FAIL + " Не удается кликнуть по ссылке.", end='')
                             else:
@@ -145,11 +158,11 @@ class Visitor:
                             print(bcolors.WARNING + 'Что-то пошло не так со списком ссылок.' + bcolors.ENDC)
                     except:
                         print(f'{bcolors.WARNING} Выполнение прервано.{bcolors.ENDC}')
-                        self.driver_set.switch_to.window(let_me_visit.driver_set.window_handles[-1])
+                        self.driver_set.switch_to.window(self.driver_set.window_handles[-1])
                 else:
                     continue
             except Exception:
-                print(f'{bcolors.WARNING}не найден на странице.{bcolors.ENDC}')
+                print(f'{bcolors.WARNING} -> не найден на странице.{bcolors.ENDC}')
 
         return
 
